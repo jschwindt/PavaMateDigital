@@ -14,15 +14,12 @@
 #endif
 
 #define BLINK_SLOW_LEVEL  250
-#define TEMP_30           200
-#define TEMP_50           350
 #define TEMP_60           450
-#define TEMP_70           550
 #define TEMP_80           600
-#define TEMP_85           650
+#define TEMP_85           640
 #define BLINK_FAST_LEVEL  650
-#define BLINK_SLOW_TIME   550
-#define BLINK_FAST_TIME   50
+#define BLINK_SLOW_TIME   750
+#define BLINK_FAST_TIME   33
 #define OFF               0
 #define ON                1
 
@@ -111,28 +108,13 @@ void update_led() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
-
-unsigned int time_to_heat() {
-  if (analogData < TEMP_30) {
-    return TIC_SECS(64);
-  }
-  else if (analogData < TEMP_50) {
-    return TIC_SECS(32);
-  }
-  else if (analogData < TEMP_70) {
-    return TIC_SECS(16);
-  }
-  return TIC_SECS(8);
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////
 /// STATE: KEEP_WARM
 
 void handle_keep_warm() {
   if (analogData < TEMP_80) {
     start_tic(ticRelayTimer);
     digitalWrite(RELAY, ON);
-    relayTime = time_to_heat();
+    relayTime = TIC_SECS(8);
     state = HEATING;
     debug("HEATING for "); debugln(relayTime);
   }
@@ -150,7 +132,7 @@ void handle_heating() {
   else if (elapsed_secs(ticRelayTimer) > relayTime) {
     start_tic(ticRelayTimer);
     if (analogData < TEMP_60) {
-      relayTime = time_to_heat();
+      relayTime = TIC_SECS(8);
       debug("STILL HEATING for "); debugln(relayTime);
     }
     else {
@@ -172,7 +154,7 @@ void handle_heating_end() {
   else if (elapsed_secs(ticRelayTimer) > TIC_SECS(10)) {
     start_tic(ticRelayTimer);
     digitalWrite(RELAY, ON);
-    relayTime = TIC_SECS(7);
+    relayTime = TIC_SECS(8);
     state = HEATING;
     debug("BACK TO HEATING for "); debugln(relayTime);
   }
@@ -198,11 +180,8 @@ void loop() {
       case HEATING_END: handle_heating_end(); break;
     }
 
-    debug("AD = ");
-    debug(analogData);
-    debug(" S = ");
-    debug(state);
-    debug(" RO = ");
-    debugln(digitalRead(RELAY));
+    debug("AD = ");  debug(analogData);
+    debug(" S = ");  debug(state);
+    debug(" RO = "); debugln(digitalRead(RELAY));
   }
 }
