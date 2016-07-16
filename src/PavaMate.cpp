@@ -1,3 +1,5 @@
+#include <Arduino.h>
+
 #if defined(__AVR_ATtiny85__)
   #define LED             0  // pin 5
   #define RELAY           1  // pin 6
